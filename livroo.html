@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nosso Livro de Amor</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Georgia, serif;
+    background: linear-gradient(135deg,#ff9a9e,#fad0c4,#ffdde1);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    overflow:hidden;
+}
+
+/* FUNDO ANIMADO */
+.romance-bg{
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    overflow:hidden;
+    z-index:-1;
+}
+
+.heart-float{
+    position:absolute;
+    bottom:-50px;
+    animation: subir linear infinite;
+}
+@keyframes subir{
+    0%{transform:translateY(0); opacity:0;}
+    20%{opacity:1;}
+    100%{transform:translateY(-110vh); opacity:0;}
+}
+
+.rose-fall{
+    position:absolute;
+    top:-50px;
+    animation:cair linear infinite;
+}
+@keyframes cair{
+    0%{transform:translateY(0) rotate(0);}
+    100%{transform:translateY(110vh) rotate(360deg);}
+}
+
+.sparkle{
+    position:absolute;
+    width:6px;
+    height:6px;
+    background:white;
+    border-radius:50%;
+    animation:brilhar 3s infinite;
+}
+@keyframes brilhar{
+    0%{opacity:0;}
+    50%{opacity:1;}
+    100%{opacity:0;}
+}
+
+/* CAPA */
+.cover{
+    position:absolute;
+    width:90%;
+    max-width:600px;
+    height:480px;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    text-align:center;
+    padding:30px;
+    transition:1s;
+}
+
+.cover img{
+    width:200px;
+    height:200px;
+    object-fit:cover;
+    border-radius:15px;
+    margin:15px 0;
+}
+
+/* BOTÃO CÂMERA */
+.file-input{
+    display:none;
+}
+
+.camera-btn{
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#ff4b5c,#ff8fa3);
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+    transition:0.3s;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    margin-top:8px;
+}
+
+.camera-btn:hover{
+    transform:scale(1.1);
+    box-shadow:0 6px 15px rgba(0,0,0,0.3);
+}
+
+button{
+    padding:8px 15px;
+    border:none;
+    background:#ff4b5c;
+    color:white;
+    border-radius:15px;
+    cursor:pointer;
+}
+
+/* LIVRO */
+.book{
+    width:90%;
+    max-width:850px;
+    height:550px;
+    position:relative;
+    perspective:2000px;
+    display:none;
+}
+
+.page{
+    position:absolute;
+    width:100%;
+    height:100%;
+    background:white;
+    padding:30px;
+    box-sizing:border-box;
+    border-radius:15px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+    transform-origin:left;
+    transition:transform 1.2s ease-in-out;
+    backface-visibility:hidden;
+    overflow-y:auto;
+}
+
+/* Caixa "Escreva algo especial" */
+.page textarea{
+    width:100%;
+    height:120px;
+    padding:12px;
+    border:2px solid #ffb6c1;
+    border-radius:15px;
+    background:rgba(255,192,203,0.15);
+    box-shadow:inset 0 0 5px rgba(0,0,0,0.05);
+    font-size:16px;
+    resize:none;
+    outline:none;
+    margin-bottom:10px;
+}
+
+.page img{
+    width:100%;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.comment-input{
+    width:100%;
+    padding:6px;
+    margin-top:10px;
+    border:none;
+    border-bottom:1px solid #ddd;
+    outline:none;
+    font-size:13px;
+}
+
+/* COMENTÁRIOS SUAVES */
+[id^="comentarios"] {
+    margin-top:10px;
+    padding:0;
+}
+
+#book p {
+    font-size:13px;
+    color:#666;
+    margin:6px 0;
+    padding:6px 10px;
+    background:rgba(255,192,203,0.15);
+    border-radius:10px;
+    border:none;
+    box-shadow:none;
+}
+
+.page-number{
+    position:absolute;
+    bottom:10px;
+    right:20px;
+    font-size:12px;
+    color:#aaa;
+}
+
+/* FINAL */
+.final-page{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    background:linear-gradient(to bottom,#fff,#ffe6eb);
+}
+
+.nav{
+    position:absolute;
+    bottom:20px;
+    display:none;
+}
+.prev{ left:20px; }
+.next{ right:20px; }
+</style>
+</head>
+
+<body>
+
+<div class="romance-bg" id="romanceBg"></div>
+
+<div class="cover" id="cover">
+    <h1 id="tituloLivro">Uma História de Amor</h1>
+    <img id="fotoCapa">
+    <br>
+    <input type="file" id="capaInput" class="file-input" accept="image/*" onchange="carregarCapa(event)">
+    <label for="capaInput" class="camera-btn">📷</label>
+    <br><br>
+    <input type="text" id="novoTitulo" placeholder="Digite o nome do livro">
+    <br><br>
+    <button onclick="abrirLivro()">Abrir Livro 💖</button>
+</div>
+
+<audio id="musica" loop>
+    <source src="I see the light.mp3" type="audio/mpeg">
+</audio>
+
+<div class="book" id="book"></div>
+
+<div class="nav prev"><button onclick="voltar()">⬅</button></div>
+<div class="nav next"><button onclick="avancar()">➡</button></div>
+
+<script>
+const totalPaginas = 20; // agora são 20 páginas
+let paginaAtual = 1;
+const book = document.getElementById("book");
+const musica = document.getElementById("musica");
+const romanceBg = document.getElementById("romanceBg");
+
+/* CRIAR PÁGINAS */
+for(let i=1;i<=totalPaginas;i++){
+    let page = document.createElement("div");
+    page.className="page";
+    page.id="page"+i;
+    page.style.zIndex = totalPaginas + 1 - i;
+
+    page.innerHTML = `
+        <textarea placeholder="Escreva algo especial..."></textarea>
+
+        <input type="file" id="imgInput${i}" class="file-input" accept="image/*" onchange="carregarImagem(event, ${i})">
+        <label for="imgInput${i}" class="camera-btn">📷</label>
+
+        <img id="img${i}" style="display:none;">
+
+        <div id="comentarios${i}"></div>
+
+        <input 
+            type="text"
+            class="comment-input"
+            id="novoComentario${i}"
+            placeholder="Escreva um comentário..."
+            onkeypress="if(event.key==='Enter') adicionarComentario(${i})"
+        >
+
+        <div class="page-number">${i}</div>
+    `;
+
+    book.appendChild(page);
+}
+
+/* PÁGINA FINAL */
+let final = document.createElement("div");
+final.className="page final-page";
+final.style.zIndex=0;
+final.innerHTML=`<h1>Para Sempre 💖</h1><p>Nossa história continua...</p>`;
+book.appendChild(final);
+
+/* FUNÇÕES */
+function abrirLivro(){
+    let titulo=document.getElementById("novoTitulo").value;
+    if(titulo.trim()!=""){
+        document.getElementById("tituloLivro").innerText=titulo;
+    }
+    document.getElementById("cover").style.opacity="0";
+    setTimeout(()=>{
+        document.getElementById("cover").style.display="none";
+        book.style.display="block";
+        document.querySelectorAll(".nav").forEach(n=>n.style.display="block");
+
+        musica.volume=0;
+        musica.play();
+        let fade=setInterval(()=>{
+            if(musica.volume<1){
+                musica.volume+=0.05;
+            }else clearInterval(fade);
+        },200);
+    },800);
+}
+
+function avancar(){
+    if(paginaAtual<=totalPaginas+1){
+        let pagina=document.getElementById("page"+paginaAtual);
+        if(pagina) pagina.style.transform="rotateY(-180deg)";
+        paginaAtual++;
+    }
+}
+
+function voltar(){
+    if(paginaAtual>1){
+        paginaAtual--;
+        let pagina=document.getElementById("page"+paginaAtual);
+        if(pagina) pagina.style.transform="rotateY(0deg)";
+    }
+}
+
+function carregarCapa(event){
+    const reader=new FileReader();
+    reader.onload=()=>document.getElementById("fotoCapa").src=reader.result;
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function carregarImagem(event,pagina){
+    const reader=new FileReader();
+    reader.onload=()=>{
+        const img=document.getElementById("img"+pagina);
+        img.src=reader.result;
+        img.style.display="block";
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function adicionarComentario(pagina){
+    let input=document.getElementById("novoComentario"+pagina);
+    if(input.value.trim()!=""){
+        let p=document.createElement("p");
+        p.innerText="💌 "+input.value;
+        p.style.background="rgba(255,192,203,0.15)";
+        p.style.border="none";
+        p.style.boxShadow="none";
+        p.style.borderRadius="10px";
+        p.style.padding="6px 10px";
+        document.getElementById("comentarios"+pagina).appendChild(p);
+        input.value="";
+    }
+}
+
+/* NAVEGAÇÃO PELO TECLADO */
+document.addEventListener("keydown", function(event){
+    if(event.key === "ArrowRight") avancar();
+    if(event.key === "ArrowLeft") voltar();
+});
+
+/* EFEITOS */
+function criarCoracao(){
+    const el=document.createElement("div");
+    el.className="heart-float";
+    el.innerHTML="💖";
+    el.style.left=Math.random()*100+"vw";
+    el.style.fontSize=(15+Math.random()*25)+"px";
+    el.style.animationDuration=(6+Math.random()*4)+"s";
+    romanceBg.appendChild(el);
+    setTimeout(()=>el.remove(),10000);
+}
+function criarRosa(){
+    const el=document.createElement("div");
+    el.className="rose-fall";
+    el.innerHTML="🌹";
+    el.style.left=Math.random()*100+"vw";
+    el.style.fontSize=(20+Math.random()*20)+"px";
+    el.style.animationDuration=(8+Math.random()*5)+"s";
+    romanceBg.appendChild(el);
+    setTimeout(()=>el.remove(),12000);
+}
+function criarBrilho(){
+    const el=document.createElement("div");
+    el.className="sparkle";
+    el.style.left=Math.random()*100+"vw";
+    el.style.top=Math.random()*100+"vh";
+    romanceBg.appendChild(el);
+    setTimeout(()=>el.remove(),3000);
+}
+
+setInterval(criarCoracao,800);
+setInterval(criarRosa,1500);
+setInterval(criarBrilho,500);
+</script>
+
+</body>
+</html>
